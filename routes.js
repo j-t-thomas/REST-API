@@ -1,10 +1,10 @@
 const express = require('express');
-const { Course, User } = require('../models');
+const { Course, User } = require('./models');
 const router = express.Router();
 
 
 //User Routes
-router.get('/User', authenticateUser, asyncHandler(async (req, res) => {
+router.get('/users', authenticateUser, async (req, res) => {
     const user = req.currentUser;
     res.status(200).json({
         id: user.id, 
@@ -12,11 +12,11 @@ router.get('/User', authenticateUser, asyncHandler(async (req, res) => {
         lastName: user.lastName,
         emailAddress: user.emailAddress,
     });
-}));
+});
    
    
-// POST to create a new user
-router.post('/Users', asyncHandler(async (req, res) => {
+// create a new user
+router.post('/users', async (req, res) => {
     try {
         await User.create(req.body);
 
@@ -32,6 +32,128 @@ router.post('/Users', asyncHandler(async (req, res) => {
         }
     }
    
-}));
+});
 
-module.exports = router;
+//Course Routes
+router.get('/courses', async (req, res, next) => {
+    try {
+      const courses = await Course.findAll({
+        attributes: [
+          'id',
+          'title',
+          'description',
+          'estimatedTime',
+          'materialsNeeded',
+        ],
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: [
+                'id',
+                'firstName', 
+                'lastName', 
+                'emailAddress'
+            ],
+          },
+        ],
+      });
+      res.json(courses);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  router.get('/courses/:id', async (req, res, next) => {
+    try {
+      const course = await Course.findAll({
+        where: {
+          id: req.params.id,
+        },
+        attributes: [
+          'id',
+          'title',
+          'description',
+          'estimatedTime',
+          'materialsNeeded',
+        ],
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: [
+                'id',
+                'firstName', 
+                'lastName', 
+                'emailAddress'
+            ],
+          },
+        ],
+      });
+      if (!course) {
+        return res.status(404).json({ message: 'Course not found' });
+      }
+      res.json(course);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // creates a new user.
+  router.post('/courses', authenticateUser, async (req, res) => {
+    let newCourse;
+    try {
+      newCourse = await Course.create(req.body);
+      res
+        .status(201)
+        .location('/Courses' + newCourse.id)
+        .end();
+    } catch (error) {
+      if (
+        error.name === 'SequelizeValidationError' ||
+        error.name === 'SequelizeUniqueConstraintError'
+      ) {
+        const errors = error.errors.map((err) => err.message);
+        res.status(400).json({ errors });
+      } else {
+        throw error;
+      }
+    }
+  });
+  
+  //update a course by ID
+  router.put('/courses/:id', authenticateUser, async (req, res, next) => {
+    const course = await Course.findByPk(req.params.id);
+    try {
+      if (req.currentUser.id != req.params.id) {
+        res.status(403).json({ message: 'User is not the authorized owner of this course.' });
+      } else {
+        await course.update(req.body);
+        res.status(204).end();
+      }
+    } catch (error) {
+      if (error.name === 'SequelizeValidationError') {
+        const errors = error.errors.map((e) => e.message);
+        res.status(400).json({ errors });
+      } else {
+        next(error);
+      }
+    }
+  });
+  
+  //Delete a course by ID
+  router.delete('/courses/:id', authenticateUser, async (req, res, next) => {
+    const course = await Course.findByPk(req.params.id);
+    try {
+      if (req.currentUser.id != course.userId) {
+        res.status(403).json({ message: 'User is not the authorized owner of this course.' });
+      } else {
+        await course.destroy();
+        res.status(204).end();
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  module.exports = router;

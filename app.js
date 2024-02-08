@@ -3,7 +3,7 @@
 // load modules
 const express = require('express');
 const morgan = require('morgan');
-const { Sequelize } = require('sequelize');
+const { Sequelize } = require('./models');
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
@@ -44,6 +44,11 @@ app.use((err, req, res, next) => {
 // set our port
 app.set('port', process.env.PORT || 5000);
 
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: 'fsjstd-restapi.db'
+});
+
 // Test database connection
 (async () => {
   try {
@@ -51,7 +56,7 @@ app.set('port', process.env.PORT || 5000);
     console.log('Database connection is successful!');
   } catch (error) {
     console.error('There is an error connecting to the database:', error);
-  }
+  } 
 })();
 
 // start listening on our port

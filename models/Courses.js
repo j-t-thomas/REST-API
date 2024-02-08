@@ -1,11 +1,11 @@
-'use strict'
+'use strict';
 const Sequelize = require('sequelize');
 
 module.exports = (sequelize) => {
     class Course extends Sequelize.Model {}
     Course.init({
         title: {
-            type: DataTypes.STRING,
+            type: Sequelize.STRING,
             allowNull: false,
             validate: {
                 notNull: {
@@ -17,7 +17,7 @@ module.exports = (sequelize) => {
             },
         },
         description: {
-            type: DataTypes.STRING,
+            type: Sequelize.STRING,
             allowNull: false,
             validate: {
                 notNull: {
@@ -29,7 +29,7 @@ module.exports = (sequelize) => {
             },
         },
         estimatedTime: {
-            type: DataTypes.STRING,
+            type: Sequelize.STRING,
             allowNull: false,
             unique: {
                 msg: 'This email already exists.'
@@ -44,7 +44,7 @@ module.exports = (sequelize) => {
             },
         },
         materialsNeeded: {
-            type: DataTypes.STRING,
+            type: Sequelize.STRING,
             allowNull: false,
             validate: {
                 notNull: {
