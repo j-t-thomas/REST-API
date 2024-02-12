@@ -1,21 +1,23 @@
 const express = require('express');
-const { Course, User } = require('./models');
+const { Course, User } = require('./models'); //separate for course
 const router = express.Router();
+const { authenticateUser } = require('./middleware/auth-user');
 
 
 //User Routes
+// get all the users
 router.get('/users', authenticateUser, async (req, res) => {
-    const user = req.currentUser;
+    const {id, firstName, lastName, emailAddress} = req.currentUser;
     res.status(200).json({
-        id: user.id, 
-        firstName: user.firstName, 
-        lastName: user.lastName,
-        emailAddress: user.emailAddress,
+        id, 
+        firstName, 
+        lastName,
+        emailAddress,
     });
 });
    
    
-// create a new user
+// POST to create a new user
 router.post('/users', async (req, res) => {
     try {
         await User.create(req.body);
@@ -34,7 +36,7 @@ router.post('/users', async (req, res) => {
    
 });
 
-//Course Routes
+//Course Routes (Error in Postman)
 router.get('/courses', async (req, res, next) => {
     try {
       const courses = await Course.findAll({
@@ -99,14 +101,14 @@ router.get('/courses', async (req, res, next) => {
     }
   });
   
-  // creates a new user.
+  // Route that creates a new user.
   router.post('/courses', authenticateUser, async (req, res) => {
     let newCourse;
     try {
       newCourse = await Course.create(req.body);
       res
         .status(201)
-        .location('/Courses' + newCourse.id)
+        .location('/courses' + newCourse.id)
         .end();
     } catch (error) {
       if (
@@ -116,14 +118,14 @@ router.get('/courses', async (req, res, next) => {
         const errors = error.errors.map((err) => err.message);
         res.status(400).json({ errors });
       } else {
-        throw error;
+        next(error);
       }
     }
   });
   
-  //update a course by ID
+  //update a course by ID (Error in Postman)
   router.put('/courses/:id', authenticateUser, async (req, res, next) => {
-    const course = await Course.findByPk(req.params.id);
+    let course = await Course.findByPk(req.params.id);
     try {
       if (req.currentUser.id != req.params.id) {
         res.status(403).json({ message: 'User is not the authorized owner of this course.' });

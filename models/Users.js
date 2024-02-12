@@ -1,5 +1,6 @@
 'use strict';
 const Sequelize = require('sequelize');
+const bcrypt = require('bcryptjs');
 
 module.exports = (sequelize) => {
     class User extends Sequelize.Model {}
@@ -54,10 +55,15 @@ module.exports = (sequelize) => {
                     msg: 'Please provide a password.'
                 },
             },
+            set(val) {
+                const hashedPassword = bcrypt.hashSync(val, 10);
+                this.setDataValue('password', hashedPassword);
+            },
         },
 
 
-    }, { sequelize });
+    }, 
+    { sequelize });
 
     User.associate = (models) => {
         //Sequelize will know that a user can be associated with one or more courses
