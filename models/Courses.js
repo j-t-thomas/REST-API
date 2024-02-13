@@ -9,10 +9,10 @@ module.exports = (sequelize) => {
             allowNull: false,
             validate: {
                 notNull: {
-                    msg: 'A first name is required.'
+                    msg: 'A title is required.'
                 },
                 notEmpty: {
-                    msg: 'Please provide a first name.'
+                    msg: 'Please provide a title.'
                 },
             },
         },
@@ -21,45 +21,27 @@ module.exports = (sequelize) => {
             allowNull: false,
             validate: {
                 notNull: {
-                    msg: 'A last name is required.'
+                    msg: 'A description is required.'
                 },
                 notEmpty: {
-                    msg: 'Please provide a last name.'
+                    msg: 'Please provide a description.'
                 },
             },
         },
         estimatedTime: {
             type: Sequelize.STRING,
-            allowNull: false,
-            unique: {
-                msg: 'This email already exists.'
-            },
-            validate: {
-                notNull: {
-                    msg: 'An email is required.'
-                },
-                isEmail: {
-                    msg: 'Please provide a valid email.'
-                },
-            },
+
         },
         materialsNeeded: {
             type: Sequelize.STRING,
-            allowNull: false,
-            validate: {
-                notNull: {
-                    msg: 'A password is required.'
-                },
-                notEmpty: {
-                    msg: 'Please provide a password.'
-                },
-            },
+
         },
     }, { sequelize });
 
     Course.associate = (models) => {
         //Sequelize will know that a user can be associated with one or more courses
         Course.belongsTo(models.User, {
+            as: 'user',
             foreignKey: {
                 fieldName: 'userID',
             },

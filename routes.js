@@ -106,6 +106,9 @@ router.get('/courses', async (req, res, next) => {
   router.post('/courses', authenticateUser, async (req, res) => {
     let newCourse;
     try {
+      if (!req.body.title || !req.body.description) {
+        return res.status(400).json({message: 'Title and description are required'});
+      }
       newCourse = await Course.create(req.body);
       res
         .status(201)
@@ -124,7 +127,7 @@ router.get('/courses', async (req, res, next) => {
     }
   });
   
-  //update a course by ID (Error in Postman)
+  //update a course by ID 
   router.put('/courses/:id', authenticateUser, async (req, res, next) => {
     let course = await Course.findByPk(req.params.id);
     try {
