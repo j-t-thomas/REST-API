@@ -47,6 +47,7 @@ router.get('/courses', async (req, res, next) => {
           'description',
           'estimatedTime',
           'materialsNeeded',
+          'userId'
         ],
         include: [
           {
@@ -79,6 +80,7 @@ router.get('/courses', async (req, res, next) => {
           'description',
           'estimatedTime',
           'materialsNeeded',
+          'userId'
         ],
         include: [
           {
@@ -106,13 +108,10 @@ router.get('/courses', async (req, res, next) => {
   router.post('/courses', authenticateUser, async (req, res) => {
     let newCourse;
     try {
-      if (!req.body.title || !req.body.description) {
-        return res.status(400).json({message: 'Title and description are required'});
-      }
       newCourse = await Course.create(req.body);
       res
         .status(201)
-        .location('/courses' + newCourse.id)
+        .location('/courses/' + newCourse.id)
         .end();
     } catch (error) {
       if (
@@ -129,20 +128,23 @@ router.get('/courses', async (req, res, next) => {
   
   //update a course by ID 
   router.put('/courses/:id', authenticateUser, async (req, res, next) => {
-    let course = await Course.findByPk(req.params.id);
     try {
-      if (req.currentUser.id != req.params.id) {
-        res.status(403).json({ message: 'User is not the authorized owner of this course.' });
-      } else {
-        await course.update(req.body);
-        res.status(204).end();
+    let course = await Course.findByPk(req.params.id);
+    
+      if (course) {
+        if (req.currentUser.id === course.userId) {
+          await course.update(req.body);
+          res.status(204).end();
+        } else {
+          res.status(403).json({ message: 'User is not the authorized owner of this course.' });
+        }
       }
     } catch (error) {
       if (error.name === 'SequelizeValidationError') {
         const errors = error.errors.map((e) => e.message);
         res.status(400).json({ errors });
       } else {
-        next(error);
+        throw error;
       }
     }
   });
