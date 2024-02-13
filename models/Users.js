@@ -69,7 +69,7 @@ module.exports = (sequelize) => {
         //Sequelize will know that a user can be associated with one or more courses
         User.hasMany(models.Course, {
             foreignKey: {
-                fieldName: 'userID',
+                fieldName: 'userId',
                 allowNull: false,
             },
         });
